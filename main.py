@@ -7,7 +7,7 @@ import os
 import csv
 
 # Создание бота
-bot = telebot.TeleBot('6845988169:AAEH66eYGnWn50oWQkQnzvizmvln0yma-nU')
+bot = telebot.TeleBot('токен')
 
 # Обработка команды /start
 @bot.message_handler(commands=['start','Выбрать действие','choose'])
