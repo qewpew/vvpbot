@@ -18,15 +18,19 @@ def handle_start(message):
         bot.send_message(message.chat.id, text=f'Привет, {name}! Я бот, который знает информацию о ВВП стран мира.')
     bot.send_message(message.chat.id, text=f'Выбери, что тебе хочется узнать:', reply_markup=kb)
 
-
 # Обработка текстовых сообщений
 # Сделать графики: ввп по годам, прирост ввп, средний ввп по сравнению с топ 5
 @bot.message_handler(func=lambda message: True)
 def handle_text(message):
-    df_2 = df[df['Country'] == message.text]
-    if len(df_2) == 0:
-        bot.send_message(message.chat.id, "Вы ввели название страны неправильно, попробуйте еще раз", reply_markup=kb)
-    else:
+    a =''
+    for i in message.text.split():
+        a+= i[0].upper()+i[1::].lower()+' '
+    message.text = a[:-1:]
+    print(message.text)
+    df_2 = df[df['Country'] == a[:-1:]]
+    if len(df_2) == 0 and len(message.text.split())==1:
+        bot.send_message(message.chat.id, "У нас нет информаци по данной стране, попробуйте один из предложенных вариантов:", reply_markup=kb)
+    else: 
         chat_id = message.chat.id
         cols = [str(i) for i in range(1999,2023) if i!=2011] #все доступные года 
         df['percent'] = (df['2022']-df['1999'])/df['1999'] #прирост ВВП 1999-2022 год
@@ -77,7 +81,6 @@ def handle_text(message):
 def handle_help(message):
     bot.reply_to(message, "Список доступных команд:\n/start - начать работу с ботом\n/help - показать список команд\n/choose - выбрать информацию из предложенных вариантов")
 
-
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):  
     if call.data == '5':
@@ -109,7 +112,6 @@ def callback_inline(call):
             os.remove('top5best.png')
         except:pass
     
-
 def top_5_best():
     cols = [str(i) for i in range(1999, 2023) if i != 2011]
     for col in cols:
@@ -131,7 +133,6 @@ def top_5_best():
     plt.tight_layout()
     plt.savefig("top5best.png")
     plt.clf()
-
 
 def top_5_growth(): #посчитать в процентах
     df['percent'] = (df['2022'] - df['1999']) / df['1999']
@@ -156,7 +157,6 @@ def top_5_growth(): #посчитать в процентах
     plt.savefig("top5growth.png")
     plt.clf()
 
-
 def top_5_worst():
     cols = [str(i) for i in range(1999, 2023) if i != 2011]
     for col in cols:
@@ -180,7 +180,6 @@ def top_5_worst():
     plt.savefig("top5worst.png")
     plt.clf()
 
-
 def top_5_loss():  #посчитать в процентах
     df['percent'] = (df['2022'] - df['1999']) / df['1999']
     df_2 = df.nsmallest(5, 'percent')[::-1]
@@ -201,20 +200,19 @@ def top_5_loss():  #посчитать в процентах
     plt.savefig("top5loss.png")
     plt.clf()
 
-
 filename = 'GDP_2_result.csv'
 df = pd.read_csv(filename)
-
 
 keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
 keyboard.add(KeyboardButton('Выбрать действие'))
 
 kb = telebot.types.InlineKeyboardMarkup()
-inline_button1 = telebot.types.InlineKeyboardButton('Топ 5 стран по приросту ВВП', callback_data='1')
+inline_button1 = telebot.types.InlineKeyboardButton('Топ 5 стран по приросту ВВП с 1999 по 2022', callback_data='1')
 inline_button2 = telebot.types.InlineKeyboardButton('Топ 5 стран по среднему ВВП', callback_data='2') 
 inline_button3 = telebot.types.InlineKeyboardButton('Топ 5 стран с наименьшим ВВП ', callback_data='3') 
 inline_button4= telebot.types.InlineKeyboardButton('Топ 5 худших стран по приросту ВВП', callback_data='4')
 inline_button5= telebot.types.InlineKeyboardButton('Узнать данные о конкретной стране', callback_data='5')
+
 kb.add(inline_button1)
 kb.add(inline_button2)
 kb.add(inline_button3)
